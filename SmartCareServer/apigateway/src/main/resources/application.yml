@@ -1,0 +1,74 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: apigateway
+
+  cloud:
+    gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOriginPatterns:
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+              - "https://*.azurecontainerapps.io"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+      routes:
+        - id: iot-service
+          order: -10
+          uri: http://iot-service:8082
+          predicates:
+            - Path=/api/sensordata/**
+          filters:
+            - StripPrefix=0
+
+        - id: chatbotbackend
+          uri: lb://chatbotbackend
+          predicates:
+            - Path=/api/bot/**
+          filters:
+            - StripPrefix=0
+
+        - id: vitalreports
+          uri: lb://vitalreports
+          predicates:
+            - Path=/api/reports/**
+          filters:
+            - StripPrefix=0
+
+        - id: mainservice
+          order: 10
+          uri: lb://mainservice
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=0
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE
+    reactor.netty.http.client: DEBUG
+    org.springframework.web.reactive: DEBUG
