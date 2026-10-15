@@ -32,6 +32,4 @@ The core application service handles healthcare workflows, while the IoT service
 - Evaluate the ECG model using appropriate metrics and documented test data.
 - Improve monitoring, error handling and service reliability.
 
-## Contributions
 
-Document each team member's actual contributions here. Clearly distinguish individual implementation from shared project work.
